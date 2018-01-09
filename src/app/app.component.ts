@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { Disposable } from 'ng-terminal';
 import { environment } from '../environments/environment';
+import { TerminalBuffer, keyMap } from 'ng-terminal';
 
 @Component({
     selector: 'app-root',
@@ -10,29 +10,40 @@ import { environment } from '../environments/environment';
 export class AppComponent {
     title = 'app';
     ws: WebSocket;
+    buffer: TerminalBuffer;
 
-    onInit($event: Disposable) {
+    onInit($event: TerminalBuffer) {
+        this.buffer = $event;
+        this.buffer.write(keyMap.Insert);
         this.ws = this.connect(environment.apiUrl);
         this.ws.onerror = (e) => console.log("err: " + JSON.stringify(e));
         this.ws.onclose = (e) => console.log("close: " + JSON.stringify(e));
         this.ws.onmessage = (e) => {
             console.log("msg: " + (e.data));
-            let data: InEvent = JSON.parse(e.data)
-            if (data.m == "\b \b")
-                $event.handle((event, input) => {
-                    return input.substring(0, input.length - 1);
-                });
-            else if (data.m == "\u0007") {
-
-            } else
-                $event.print(data.m);
+            let data: InEvent = JSON.parse(e.data);
+            this.buffer.write(this.convertServerCharactersToClient(data.m));
         }
         this.ws.onopen = (e) => console.log("open: " + JSON.stringify(e))
     }
-    onNext($event: Disposable) {
-        let ch = this.convertToSingleChar($event.event)
-        if (ch != undefined)
+
+    convertServerCharactersToClient(value: string): string {
+        if (value.indexOf("\b \b") != -1) {
+            return value.replace(/[\b] [\b]/g, "\b");
+        } else if (value.indexOf("\b") != -1) {
+            return value.replace(/[\b]/g, keyMap.ArrowLeft)
+        } else if (value == "\u0007") {
+            return ""
+        } else {
+            return value;
+        }
+    }
+
+    onKey($event: KeyboardEvent) {
+        console.log('key:' + $event.key);
+        let ch = this.convertToSingleChar($event)
+        if (ch != undefined) {
             this.ws.send(JSON.stringify({ t: "i", "m": ch }))
+        }
     }
     //https://www.novell.com/documentation/extend5/Docs/help/Composer/books/TelnetAppendixB.html
     convertToSingleChar(event: KeyboardEvent): string {
@@ -45,7 +56,7 @@ export class AppComponent {
                 break;
             }
             case "tab": {
-                returnValue = "\t"
+                returnValue = keyMap.Tab
                 break;
             }
             case "space": {
@@ -53,23 +64,23 @@ export class AppComponent {
                 break;
             }
             case "backspace": {
-                returnValue = "\b"
+                returnValue = keyMap.BackSpace
                 break;
-            }/*
+            }
             case "arrowleft": {
-                returnValue = "\u001b[D"
+                returnValue = keyMap.ArrowLeft
                 break;
             }
             case "arrowright": {
-                returnValue = "\u001b[C"
+                returnValue = keyMap.ArrowRight
                 break;
-            }*/
+            }
             case "arrowdown": {
-                returnValue = "\u001b[B"
+                returnValue = keyMap.ArrowDown
                 break;
             }
             case "arrowup": {
-                returnValue = "\u001b[A"
+                returnValue = keyMap.ArrowUp
                 break;
             }
             default: {
