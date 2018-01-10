@@ -1,0 +1,5 @@
+.terminal-outer {
+    height: 600px;
+    box-sizing: border-box;
+    border: solid 2px #429bf4;
+}

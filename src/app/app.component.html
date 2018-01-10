@@ -1,6 +1,20 @@
 <!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center;width:400px;height:400px">
-  <ng-terminal
-    (onInit)="onInit($event)" 
-    (onKey)="onKey($event)"></ng-terminal>
+<div style="margin: 10px">
+  <h1>Online JShell</h1>
+  <p>Online JShell is free to use in anywhere and new features will be coming soon.</p>
+  <ul>
+    <li>to manage snippets with using Github account.</li>
+    <li>to support 3rd party libraries.</li>
+  </ul>
+  <div class="terminal-outer"
+       mwlResizable 
+       [ngStyle]="style"
+       [validateResize]="validate"
+       [enableGhostResize]="true"
+       [resizeEdges]="{bottom: true, right: true}"
+       (resizeEnd)="onResizeEnd($event)">
+    <ng-terminal
+      (onInit)="onInit($event)" 
+      (onKey)="onKey($event)"></ng-terminal>
+  </div>
 </div>

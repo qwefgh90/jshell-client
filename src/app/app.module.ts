@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { NgTerminalModule } from 'ng-terminal';
-
+import { ResizableModule } from 'angular-resizable-element';
 import { AppComponent } from './app.component';
 
 
@@ -11,7 +11,8 @@ import { AppComponent } from './app.component';
     ],
     imports: [
         BrowserModule,
-        NgTerminalModule
+        NgTerminalModule,
+        ResizableModule
     ],
     providers: [],
     bootstrap: [AppComponent]
