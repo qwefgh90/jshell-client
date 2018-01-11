@@ -23,7 +23,7 @@
     "@angular/router": "^5.0.0",
     "angular-resizable-element": "^2.0.0",
     "core-js": "^2.4.1",
-    "ng-terminal": "^1.0.4",
+    "ng-terminal": "^1.0.5",
     "rxjs": "^5.5.2",
     "space-lift": "^0.6.4",
     "zone.js": "^0.8.14"

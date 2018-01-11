@@ -77,15 +77,15 @@ export class AppComponent implements OnDestroy {
     }
 
     onKey($event: KeyboardEvent) {
-        console.log('key:' + $event.key);
+        console.log('event -> '); console.log($event);
         let ch = this.convertToSingleChar($event)
         this.keySubject.next(ch);
     }
-    //https://www.novell.com/documentation/extend5/Docs/help/Composer/books/TelnetAppendixB.html
-    convertToSingleChar(event: KeyboardEvent): string {
-        let source = event.key;
-        let lower = event.key.toLowerCase()
-        let returnValue: string;
+
+    convertToSingleChar(e: KeyboardEvent): string {
+        let source = e.key;
+        let lower = e.key.toLowerCase()
+        let returnValue: string = '';
         switch (lower) {
             case "enter": {
                 returnValue = "\n"
@@ -128,10 +128,24 @@ export class AppComponent implements OnDestroy {
                 break;
             }
             default: {
-                if (source.length == 1)
-                    returnValue = source;
-                else
-                    returnValue = undefined
+                if (e.type == 'compositionstart') {
+                    returnValue = ' ';
+                } else if (e.type == 'compositionupdate' && e.key.length == 1) {
+                    returnValue += '\b';
+                    returnValue += e.key;
+                } else if (e.type == 'compositionend' && e.key.length == 1) {
+                    if (e.key < '\u007f') { //ignore writing low unicode key in mobile. It should be written in textInput event
+                        returnValue += '\b \b';
+                    } else {
+                        returnValue += '\b';
+                        returnValue += e.key;
+                    }
+                } else {
+                    if (source.length == 1)
+                        returnValue = source;
+                    else
+                        returnValue = ''
+                }
             }
         }
         return returnValue;
