@@ -17,7 +17,9 @@ export class AppComponent implements OnDestroy {
 
     keySubject = new Rx.Subject<string>();
     keyInterval = 100; //millisecond
-    public style: object = {};
+    w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    public style: object = { height: (this.h / 2) + 'px' };
 
     onInit($event: TerminalBuffer) {
         this.buffer = $event;
@@ -33,6 +35,7 @@ export class AppComponent implements OnDestroy {
                 }
                 return ch;
             });
+
     }
 
     ngOnDestroy() {
@@ -65,12 +68,15 @@ export class AppComponent implements OnDestroy {
     }
 
     convertServerCharactersToClient(value: string): string {
+
         if (value.indexOf("\b \b") != -1) {
             return value.replace(/[\b] [\b]/g, "\b");
         } else if (value.indexOf("\b") != -1) {
             return value.replace(/[\b]/g, keyMap.ArrowLeft)
         } else if (value == "\u0007") {
             return ""
+        } else if (value == "\r\n") {
+            return "\n"
         } else {
             return value;
         }
@@ -165,13 +171,11 @@ export class AppComponent implements OnDestroy {
     }
 
     onResizeEnd(event: ResizeEvent): void {
-        this.style = {
-            position: 'fixed',
-            left: `${event.rectangle.left}px`,
-            top: `${event.rectangle.top}px`,
-            width: `${event.rectangle.width}px`,
-            height: `${event.rectangle.height}px`
-        };
+        this.style['position'] = 'fixed';
+        this.style['left'] = `${event.rectangle.left}px`;
+        this.style['top'] = `${event.rectangle.top}px`;
+        this.style['width'] = `${event.rectangle.width}px`;
+        this.style['height'] = `${event.rectangle.height}px`;
     }
 }
 
