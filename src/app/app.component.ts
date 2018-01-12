@@ -13,6 +13,7 @@ export class AppComponent implements OnDestroy {
     title = 'app';
     ws: WebSocket;
     buffer: TerminalBuffer;
+    trying = false;
     running = false;
 
     keySubject = new Rx.Subject<string>();
@@ -45,24 +46,37 @@ export class AppComponent implements OnDestroy {
     runSocket() {
         if (this.running == false) {
             this.ws = new WebSocket(environment.apiUrl);
+            this.trying = true;
+            this.buffer.write("Initializing new JShell...\n\n");
             this.ws.onerror = (e) => {
                 console.log("onerr: " + JSON.stringify(e));
                 this.running = false;
+                if (this.trying) {
+                    this.buffer.write(keyMap.BackSpace + keyMap.BackSpace + keyMap.FnEraseInLine(2));
+                    this.trying = false;
+                }
             };
             this.ws.onclose = (e) => {
                 console.log("onclose: " + JSON.stringify(e));
                 this.running = false;
+                if (this.trying) {
+                    this.buffer.write(keyMap.BackSpace + keyMap.BackSpace + keyMap.FnEraseInLine(2));
+                    this.trying = false;
+                }
                 this.buffer.write("\nPlease enter to restart JShell.\n\n");
             };
             this.ws.onmessage = (e) => {
                 console.log("onmsg: " + (e.data));
+                if (this.trying) {
+                    this.trying = false;
+                    this.buffer.write(keyMap.BackSpace + keyMap.BackSpace + keyMap.FnEraseInLine(2));
+                }
                 let data: InEvent = JSON.parse(e.data);
                 this.buffer.write(this.convertServerCharactersToClient(data.m));
             }
             this.ws.onopen = (e) => {
                 console.log("onopen: " + JSON.stringify(e));
                 this.running = true;
-
             };
         }
     }
@@ -73,10 +87,10 @@ export class AppComponent implements OnDestroy {
             return value.replace(/[\b] [\b]/g, "\b");
         } else if (value.indexOf("\b") != -1) {
             return value.replace(/[\b]/g, keyMap.ArrowLeft)
+        } else if (value.indexOf("\r\n") != -1) {
+            return value.replace("\r\n", "\n")
         } else if (value == "\u0007") {
             return ""
-        } else if (value == "\r\n") {
-            return "\n"
         } else {
             return value;
         }
